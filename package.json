@@ -1,0 +1,18 @@
+{
+  "name": "com.pluginlit.core",
+  "displayName": "PluginLit Core",
+  "version": "1.0.0",
+  "unity": "2021.3",
+  "description": "A frame work with lit plugins.",
+  "keywords": [
+    "pluginlit",
+    "buildapp",
+    "pluginlitcore"
+  ],
+  "dependencies": {
+  },
+  "author": {
+    "name": "LyneXiao",
+    "email": "lixonxs@icloud.com"
+  }
+}
