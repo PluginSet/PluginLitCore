@@ -121,8 +121,10 @@ namespace PluginLit.Core.Editor
         
         private static string GetEditorGradleVersion()
         {
-	        var path = Path.Combine(Global.PlaybackEnginesPath, "AndroidPlayer", "Tools", "gradle", "lib");
-	        foreach (var file in Directory.GetFiles(path, "gradle-*.jar"))
+	        var gradlePath = Path.Combine(Global.PlaybackEnginesPath, "AndroidPlayer", "Tools", "gradle");
+	        if (EditorPrefs.HasKey("GradleUseEmbedded") && !EditorPrefs.GetBool("GradleUseEmbedded"))
+		        gradlePath = EditorPrefs.GetString("GradlePath", gradlePath);
+	        foreach (var file in Directory.GetFiles(Path.Combine(gradlePath, "lib"), "gradle-*.jar"))
 	        {
 		        var fileName = Path.GetFileNameWithoutExtension(file);
 		        var match = Regex.Match(fileName, "gradle(-\\w+)+-([0-9]+\\.[0-9]+(\\.[0-9]+)?)");

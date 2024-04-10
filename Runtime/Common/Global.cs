@@ -518,6 +518,7 @@ namespace PluginLit.Core
 
         public static void SetFileExecutable(string fileName, string workDir = null)
         {
+#if UNITY_EDITOR_OSX
 //            if (Regex.IsMatch(fileName, @"\s*[\w]+\s*"))
 //                return;
 //
@@ -531,6 +532,7 @@ namespace PluginLit.Core
                 return;
             
             ExecuteCommand("chmod", false, "u+x ", path);
+#endif
         }
         
         public static void ExecuteCommand(string fileName, string workDir, bool useShell, params string[] args)
