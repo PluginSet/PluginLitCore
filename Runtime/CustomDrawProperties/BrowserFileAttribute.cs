@@ -42,7 +42,7 @@ namespace PluginLit.Core
             }
             
             var labelRect = new Rect(position.x + width + space, position.y, position.width - width - space, position.height);
-            GUI.Label(labelRect, property.stringValue);
+            EditorGUI.LabelField(labelRect, new GUIContent(property.stringValue));
         }
 #endif
     }
