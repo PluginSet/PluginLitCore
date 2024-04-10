@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,6 +30,12 @@ namespace PluginLit.Core.Editor
         {
             if (IsVisible(property))
             {
+                var attr = (DrawablePropertyAttribute)fieldInfo.GetCustomAttributes(typeof(DrawablePropertyAttribute), true).First();
+                if (attr != null && attr.UseCustomHeight)
+                {
+                    return attr.GetPropertyHeight(property, label);
+                }
+                
                 if (property.hasVisibleChildren && property.isExpanded)
                     return property.CountInProperty() * EditorGUIUtility.singleLineHeight + 10f;
                 else

@@ -22,6 +22,8 @@ namespace PluginLit.Core
 #if UNITY_EDITOR
         public abstract void DrawProperty(Rect position, SerializedProperty property, GUIContent label);
 
+        public virtual bool UseCustomHeight { get; } = false;
+
         public virtual float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             return EditorGUIUtility.singleLineHeight;

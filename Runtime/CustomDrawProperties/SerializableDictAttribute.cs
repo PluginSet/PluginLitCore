@@ -1,6 +1,6 @@
 using System;
-using System.Reflection;
 #if UNITY_EDITOR
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -43,8 +43,6 @@ namespace PluginLit.Core
         }
         
 #if UNITY_EDITOR
-        private bool _layouted = false;
-        
         private List<object> keys = new List<object>();
 
         private void CheckKeysStart()
@@ -69,54 +67,74 @@ namespace PluginLit.Core
         {
             return KeyValueGetter?.Invoke(key);
         }
-        
+
+        public override bool UseCustomHeight => true;
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+
+            if (property.isExpanded)
+            {
+                var pairs = property.FindPropertyRelative("Pairs");
+                if (pairs != null && pairs.isArray)
+                {
+                    var count = pairs.arraySize;
+                    return (count + 1) * EditorGUIUtility.singleLineHeight + 2f * count;
+                }
+            }
+            return EditorGUIUtility.singleLineHeight;
+        }
+
         public override void DrawProperty(Rect position, SerializedProperty property, GUIContent label)
         {
-            
-            if (Event.current.type == EventType.Repaint && !_layouted)
-                return;
-
-            if (Event.current.type == EventType.Layout)
-                _layouted = true;
-            else
-                _layouted = false;
-            
             var pairs = property.FindPropertyRelative("Pairs");
             if (pairs == null || !pairs.isArray)
                 return;
-            
+
+            var pos = position.position;
+            var width = position.width;
             var size = pairs.arraySize;
-            pairs.isExpanded = EditorGUILayout.Foldout(pairs.isExpanded, $"{label.tooltip ?? label.text}:Count = {size}");
+            pairs.isExpanded = EditorGUI.Foldout(
+                new Rect(pos, new Vector2(width * 0.8f, EditorGUIUtility.singleLineHeight))
+                , pairs.isExpanded, $"{label.tooltip ?? label.text}:Count = {size}");
+            property.isExpanded = pairs.isExpanded;
+            
+            EditorGUI.BeginChangeCheck();
+            size = EditorGUI.IntField(new Rect(new Vector2(pos.x + width * 0.8f, pos.y), new Vector2(width * 0.2f, EditorGUIUtility.singleLineHeight)), size);
+            if (EditorGUI.EndChangeCheck())
+            {
+                pairs.arraySize = size;
+                pairs.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            pos.y += EditorGUIUtility.singleLineHeight + 2f;
             
             if (pairs.isExpanded)
             {
                 EditorGUI.BeginChangeCheck();
-                size = EditorGUILayout.IntField("Count", size);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    pairs.arraySize = size;
-                    pairs.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                }
-                
-                EditorGUI.BeginChangeCheck();
                 CheckKeysStart();
                 for (int i = 0; i < size; i++)
                 {
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.Separator();
-                    
+                    var tendPos = new Vector2(pos.x + 6f, pos.y);
                     var item = pairs.GetArrayElementAtIndex(i);
                     var key = item.FindPropertyRelative("Key");
                     var color = GUI.contentColor;
                     if (!CheckKeyIsValid(key))
                         GUI.contentColor = Color.red;
-                    EditorGUILayout.PropertyField(key, GUIContent.none);
-                    GUI.contentColor = color;
-                    
-                    EditorGUILayout.LabelField("=>", GUILayout.MaxWidth(40));
-                    EditorGUILayout.PropertyField(item.FindPropertyRelative("Value"), GUIContent.none);
 
-                    EditorGUILayout.EndHorizontal();
+                    EditorGUI.PropertyField(
+                        new Rect(tendPos, new Vector2(width * 0.4f, EditorGUIUtility.singleLineHeight))
+                        , key, GUIContent.none);
+                    GUI.contentColor = color;
+
+                    tendPos.x += width * 0.4f + 6f;
+                    EditorGUI.LabelField(new Rect(tendPos, new Vector2(20, EditorGUIUtility.singleLineHeight)), "=>");
+                    tendPos.x += 26f;
+                    EditorGUI.PropertyField(Rect.MinMaxRect(tendPos.x, tendPos.y, position.xMax,
+                            tendPos.y + EditorGUIUtility.singleLineHeight)
+                        , item.FindPropertyRelative("Value"), GUIContent.none);
+
+                    pos.y += EditorGUIUtility.singleLineHeight + 2f;
                 }
 
                 if (EditorGUI.EndChangeCheck())
