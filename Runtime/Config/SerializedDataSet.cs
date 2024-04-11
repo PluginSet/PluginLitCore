@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR
@@ -32,6 +33,19 @@ namespace PluginLit.Core
         public Type ClassType;
         public string ToolTips;
     }
+
+    [Serializable]
+    public class SerializedDataJsonItem
+    {
+        [SerializeField]
+        public string Key;
+
+        [SerializeField]
+        public string ClassID;
+
+        [SerializeField]
+        public string Content;
+    }
     
 
     [Serializable]
@@ -62,6 +76,14 @@ namespace PluginLit.Core
         }
 #endif
     }
+
+    
+    [Serializable]
+    public class SerializedDataSetJsonData
+    {
+        [SerializeField]
+        public SerializedDataJsonItem[] DataItems;
+    }
     
     public abstract class SerializedDataSet: ScriptableObject, ISettingAsset
     {
@@ -75,17 +97,56 @@ namespace PluginLit.Core
 
         private bool isLoading { get; set; }
 
+        private static Type FindType(string classId)
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var type = assembly.GetType(classId);
+                if (type != null)
+                    return type;
+            }
+
+            return null;
+        }
+
         public static T LoadFromJson<T>(string json) where T : SerializedDataSet
         {
+            var jsonData = JsonUtility.FromJson<SerializedDataSetJsonData>(json);
             var result = ScriptableObject.CreateInstance<T>();
-            JsonUtility.FromJsonOverwrite(json, result);
+            result.DataItems.Clear();
+            foreach (var item in jsonData.DataItems)
+            {
+                var type = FindType(item.ClassID);
+                if (type == null)
+                    continue;
+                
+                var data = new SerializedDataItem()
+                {
+                    Key = item.Key,
+                    ClassID = item.ClassID,
+                    ClassType = SerializedType.Create(item.Key, type, null)
+                };
+                data.Data = ScriptableObject.CreateInstance(type);
+                JsonUtility.FromJsonOverwrite(item.Content, data.Data);
+                result.DataItems.Add(data);
+            }
             result.OnLoad();
             return result;
         }
 
         public string ToJson()
         {
-            return JsonUtility.ToJson(this);
+            var jsonData = new SerializedDataSetJsonData()
+            {
+                DataItems = DataItems.Select(item => new SerializedDataJsonItem()
+                {
+                    Key = item.Key,
+                    ClassID = item.ClassID,
+                    Content = JsonUtility.ToJson(item.Data),
+                }).ToArray()
+            };
+            
+            return JsonUtility.ToJson(jsonData);
         }
 
         private void LoadValidMap()

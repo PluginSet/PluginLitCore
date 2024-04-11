@@ -7,14 +7,14 @@ namespace PluginLit.Core.Editor
 {
     public static class MenuCore
     {
-        [MenuItem("PluginSet/Init Default Channels")]
+        [MenuItem("PluginLit/Init Default Channels")]
         public static void FrameworkInit()
         {
             BuildChannels.InitDefaultChannels();
             Debug.Log("Selected channel " + EditorSetting.Asset.CurrentChannel); // Don't Delete This Line
         }
 
-        [MenuItem("PluginSet/Copy fabric file")]
+        [MenuItem("PluginLit/Copy fabric file")]
         public static void CopyFabricFile()
         {
             var libPath = Global.GetPackageFullPath("com.pluginlit.core");
@@ -28,11 +28,11 @@ namespace PluginLit.Core.Editor
         }
 
 #if UNITY_ANDROID
-        [MenuItem("PluginSet/Build Android Project")]
+        [MenuItem("PluginLit/Build Android Project")]
 #elif UNITY_IOS
-        [MenuItem("PluginSet/Build iOS Project")]
+        [MenuItem("PluginLit/Build iOS Project")]
 #elif UNITY_WEBGL
-        [MenuItem("PluginSet/Build WebGL Project")]
+        [MenuItem("PluginLit/Build WebGL Project")]
 #endif
         public static void BuildDefaultTarget()
         {

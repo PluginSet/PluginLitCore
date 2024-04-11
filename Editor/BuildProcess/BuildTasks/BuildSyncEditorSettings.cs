@@ -10,7 +10,7 @@ namespace PluginLit.Core.Editor
     {
         public override void Execute(BuildProcessorContext context)
         {
-            var config = PluginSetConfig.NewAsset;
+            var config = PluginsConfig.NewAsset;
             context.SetPluginsConfig(config);
             
             // sync context
@@ -18,7 +18,7 @@ namespace PluginLit.Core.Editor
             CompleteEditorSettings(context, config);
         }
         
-        private static void CompleteEditorSettings(BuildProcessorContext context, PluginSetConfig config)
+        private static void CompleteEditorSettings(BuildProcessorContext context, PluginsConfig config)
         {
             // sync setting
             PlayerSettings.SplashScreen.show = context.BuildChannels.ShowUnityLogo;

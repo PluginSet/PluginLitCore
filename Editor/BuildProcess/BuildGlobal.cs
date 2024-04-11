@@ -4,14 +4,14 @@ namespace PluginLit.Core.Editor
 {
     public static class BuildGlobal
     {
-        public static void SetPluginsConfig(this BuildProcessorContext context, PluginSetConfig config)
+        public static void SetPluginsConfig(this BuildProcessorContext context, PluginsConfig config)
         {
             context.Set("pluginsConfig", config);
         }
 
-        public static PluginSetConfig GetPluginsConfig(this BuildProcessorContext context)
+        public static PluginsConfig GetPluginsConfig(this BuildProcessorContext context)
         {
-            return context.Get<PluginSetConfig>("pluginsConfig");
+            return context.Get<PluginsConfig>("pluginsConfig");
         }
         
         public static void SetBuildResult(this BuildProcessorContext context, string key, object value)

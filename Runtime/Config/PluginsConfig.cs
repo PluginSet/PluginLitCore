@@ -3,35 +3,39 @@ using System.Linq;
 
 namespace PluginLit.Core
 {
-    public class PluginSetConfig : SerializedDataSet
+    public class PluginsConfig : SerializedDataSet
     {
-        private static PluginSetConfig _instance;
+        private static PluginsConfig _instance;
 
-        public static PluginSetConfig Instance
+        public static PluginsConfig Instance
         {
             get
             {
+#if !UNITY_EDITOR
                 if (_instance == null)
                 {
-                    _instance = SettingAssetLoader.MainSettingLoader.GetMain<PluginSetConfig>();
+#endif
+                    _instance = SettingAssetLoader.MainSettingLoader.GetMain<PluginsConfig>();
+#if !UNITY_EDITOR
                 }
+#endif
 
                 return _instance;
             }
         }
 
-        public static PluginSetConfig LoadFromJson(string json)
+        public static PluginsConfig LoadFromJson(string json)
         {
-            _instance = SerializedDataSet.LoadFromJson<PluginSetConfig>(json);
+            _instance = SerializedDataSet.LoadFromJson<PluginsConfig>(json);
             return _instance;
         }
         
 #if UNITY_EDITOR
-        public static PluginSetConfig NewAsset
+        public static PluginsConfig NewAsset
         {
             get
             {
-                SettingAssetLoader.MainSettingLoader.RemoveMainAsset<PluginSetConfig>();
+                SettingAssetLoader.MainSettingLoader.RemoveMainAsset<PluginsConfig>();
                 return Instance;
             }
         }

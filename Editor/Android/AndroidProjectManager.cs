@@ -85,7 +85,7 @@ namespace PluginLit.Core.Editor
             LibraryManifest.Load(Path.Combine(LibraryPath, "src", "main", "AndroidManifest.xml"));
             
             Proguard = new StringBuilder();
-            Global.AppendProguardInLib(Proguard, "PluginSet.Core");
+            Global.AppendProguardInLib(Proguard, "com.pluginlit.core");
 
             var node = LibraryGradle.ROOT.GetOrCreateNode("android/defaultConfig");
             node.AppendContentNode("consumerProguardFiles \'proguard-user.txt\'");
