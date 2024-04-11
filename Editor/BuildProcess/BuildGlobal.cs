@@ -4,6 +4,16 @@ namespace PluginLit.Core.Editor
 {
     public static class BuildGlobal
     {
+        public static void SetPluginsConfig(this BuildProcessorContext context, PluginSetConfig config)
+        {
+            context.Set("pluginsConfig", config);
+        }
+
+        public static PluginSetConfig GetPluginsConfig(this BuildProcessorContext context)
+        {
+            return context.Get<PluginSetConfig>("pluginsConfig");
+        }
+        
         public static void SetBuildResult(this BuildProcessorContext context, string key, object value)
         {
             var dict = context.TryGet<Dictionary<string, object>>("buildResultJson", null);

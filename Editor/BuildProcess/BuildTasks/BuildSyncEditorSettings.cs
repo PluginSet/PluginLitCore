@@ -6,7 +6,7 @@ namespace PluginLit.Core.Editor
         public override void Execute(BuildProcessorContext context)
         {
             var config = PluginSetConfig.NewAsset;
-            context.Set("pluginsConfig", config);
+            context.SetPluginsConfig(config);
             
             // sync context
             Global.CallCustomOrderMethods<OnSyncEditorSettingAttribute, BuildToolsAttribute>(context);
