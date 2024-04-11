@@ -20,6 +20,12 @@ namespace PluginLit.Core
             }
         }
 
+        public static PluginSetConfig LoadFromJson(string json)
+        {
+            _instance = SerializedDataSet.LoadFromJson<PluginSetConfig>(json);
+            return _instance;
+        }
+        
 #if UNITY_EDITOR
         public static PluginSetConfig NewAsset
         {

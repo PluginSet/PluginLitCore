@@ -81,7 +81,7 @@ if UNITY_HUB:
     path = os.path.join(UNITY_HUB, unity_version.get("m_EditorVersion", "unknow"))
     if os.path.exists(path):
         if is_win_platform():
-            UNITY_PATH = os.path.join(path, "Editor", "Unity.exe")
+            UNITY_PATH = os.path.join(path, "Unity.exe")
         else:
             UNITY_PATH = os.path.join(path, "Unity.app", "Contents", "MacOS", "Unity")
         log.info("Set UNITY_PATH to hub version " + UNITY_PATH)
@@ -751,8 +751,8 @@ def generateAab(android_project_path, debug):
     build_aab_file = os.path.join(android_project_path, "launcher", "build", "outputs", "bundle", mode, aab_name)
     return build_aab_file
     
-
-def generateApk(android_project_path, debug):
+    
+def buildAndroidProject(android_project_path, debug):
     gradlew = "./gradlew"
     if is_win_platform():
         gradlew = '"./gradlew.bat"'
@@ -761,6 +761,22 @@ def generateApk(android_project_path, debug):
         "assembleDebug" if debug else "assembleRelease"
     ]
     execall('cd "%s" && %s' % (android_project_path, " ".join(cmd)))
+    
+    
+def isUnityEngine(android_project_path):
+    return os.path.exists(os.path.join(android_project_path, "unityLibrary"))
+    
+def generateLib(android_project_path, debug):
+    buildAndroidProject(android_project_path, debug)
+    mode = "debug" if debug else "release"
+    isUnity = isUnityEngine(android_project_path)
+    lib_path = os.path.join(android_project_path, "unityLibrary" if isUnity else "tuanjieLibrary", "build", "outputs", "aar")
+    lib_name = "%s-%s.aar" % ("unityLibrary" if isUnity else "tuanjieLibrary", mode)
+    return os.path.join(lib_path, lib_name), lib_name
+    
+
+def generateApk(android_project_path, debug):
+    buildAndroidProject(android_project_path, debug)
     mode = "debug" if debug else "release"
     apk_name = "launcher-%s.apk" % mode
     build_apk_file = os.path.join(android_project_path, "launcher", "build", "outputs", "apk", mode, apk_name)
@@ -883,6 +899,24 @@ def build_all_apks(apks_path, apk_name_template, channel, channelIds, version_na
     return build_result
 
 
+def build_unity_lib(target_lib_path, channel, version_name, build_number, temp_path, debug, cache_log, product, gitcommit):
+    dump_now("start build all apks")
+    export_project("android", channel, "10000", version_name, build_number, temp_path, debug, cache_log, product, gitcommit)
+    dump_now("export android project")
+    build_result = get_build_result(temp_path)
+    android_project_path = build_result.get("projectPath", None)
+    if android_project_path is None:
+        print("buld_result >>>>>>> ", str(build_result))
+        return FAILURE("Cannot get android project path")
+    lib_file_path, lib_file_name = generateLib(android_project_path, debug)
+    dump_now("generate unity library")
+    if not os.path.exists(lib_file_path):
+        return FAILURE("找不到构建的AAR" + lib_file_path)
+    check_path(target_lib_path)
+    copy_file(lib_file_path, os.path.join(target_lib_path, lib_file_name))
+    return build_result
+
+
 def build_ios_installer(installer_path, channel, channelId, version_name, build_number, temp_path
     , debug, cache_log, product, gitcommit, iosBuildType="adHoc"):
     dump_now("start build ios installer")
@@ -995,6 +1029,33 @@ def buildAppsFlow(context, platform, channel, channelIds, version_name, build_nu
         else:
             raise Exception("not support platform " + platform)
 #         upload_bugly_symbols(build_result)
+    except Exit as exit:
+        shutil.move(temp_path, out_path)
+        return FAILURE(exit.message)
+    except Exception as err:
+        return FAILURE("Build Fail with error::" + str(err))
+        
+    shutil.move(temp_path, out_path)
+    return SUCESS("Build Completed")
+
+
+@task(help={
+    "channel": "目标渠道",
+    "version_name": "版本号名称",
+    "build_number": "build号",
+    "out_path": "输出目录",
+
+    "debug": "DEBUG模式会打开构建时的开发模式选项，且增加DEBUG宏",
+    "log": "保存log文件",
+    "product": "是否为生产模式",
+    'gitcommit': "gitcommit号，用来标识资源版本TAG",
+})
+def buildUnityLibFlow(context, channel, version_name, build_number, out_path, debug=False, log=True, product=False, gitcommit=None):
+    temp_path = os.path.join(PROTJECT_PATH, "Build", "android", "build_%s" % build_number)
+    rm_dir(temp_path)
+    try:
+        target_lib_path = os.path.join(temp_path, "library")
+        build_result = build_unity_lib(target_lib_path, channel, version_name, build_number, temp_path, debug, log, product, gitcommit)
     except Exit as exit:
         shutil.move(temp_path, out_path)
         return FAILURE(exit.message)

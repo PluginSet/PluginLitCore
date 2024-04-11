@@ -145,7 +145,7 @@ namespace PluginLit.Core.Editor
             if (mainActivity == null)
                 throw new BuildException("No find main activity node in manifest!");
 
-            var clone = LauncherManifest.createElementWithPath(AndroidConst.META_DATA_PARENT);
+            var clone = LauncherManifest.findFirstElement(AndroidConst.META_DATA_PARENT);
             clone.InnerXml = mainActivity.OuterXml;
             mainActivity.ParentNode?.RemoveChild(mainActivity);
         }
