@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace PluginLit.Core
 {
@@ -11,14 +12,14 @@ namespace PluginLit.Core
         {
             get
             {
-#if !UNITY_EDITOR
-                if (_instance == null)
+                if (_instance == null
+#if UNITY_EDITOR
+                    || !Application.isPlaying
+#endif
+                    )
                 {
-#endif
                     _instance = SettingAssetLoader.MainSettingLoader.GetMain<PluginsConfig>();
-#if !UNITY_EDITOR
                 }
-#endif
 
                 return _instance;
             }
