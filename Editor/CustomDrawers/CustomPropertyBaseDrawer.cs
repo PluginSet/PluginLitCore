@@ -30,10 +30,14 @@ namespace PluginLit.Core.Editor
         {
             if (IsVisible(property))
             {
-                var attr = (DrawablePropertyAttribute)fieldInfo.GetCustomAttributes(typeof(DrawablePropertyAttribute), true).First();
-                if (attr != null && attr.UseCustomHeight)
+                var attrs = fieldInfo.GetCustomAttributes(typeof(DrawablePropertyAttribute), true);
+                if (attrs.Length > 0)
                 {
-                    return attr.GetPropertyHeight(property, label);
+                    var attr = (DrawablePropertyAttribute)attrs.First();
+                    if (attr != null && attr.UseCustomHeight)
+                    {
+                        return attr.GetPropertyHeight(property, label);
+                    }
                 }
                 
                 if (property.hasVisibleChildren && property.isExpanded)
