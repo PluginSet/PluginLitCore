@@ -85,6 +85,11 @@ namespace PluginLit.Core.Editor
             {
                 CloneAsset(this.target);
             }
+            
+            if (GUILayout.Button("删除过时配置"))
+            {
+                ClearAsset(self);
+            }
 
             serializedObject.Update();
 
@@ -166,6 +171,31 @@ namespace PluginLit.Core.Editor
             {
                 self.OnChildChanged();
             }
+        }
+
+        private static void ClearAsset(SerializedDataSet asset)
+        {
+            var path = AssetDatabase.GetAssetPath(asset);
+            var fileName = Path.GetFileNameWithoutExtension(path);
+            if (string.IsNullOrEmpty(fileName))
+                return;
+
+            var invalidKeys = asset.SerializedTypes.Select(type => type.Key).ToArray();
+            var allAssets = AssetDatabase.LoadAllAssetsAtPath(path);
+            foreach (var sub in allAssets)
+            {
+                if (sub == null || !AssetDatabase.IsSubAsset(sub))
+                    continue;
+
+                if (!invalidKeys.Contains(sub.name))
+                {
+                    AssetDatabase.RemoveObjectFromAsset(sub);
+                    EditorUtility.SetDirty(asset);
+                }
+            }
+            
+            asset.Reload();
+            AssetDatabase.SaveAssets();
         }
 
         private static void CloneAsset(Object asset)
