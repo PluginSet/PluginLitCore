@@ -41,10 +41,18 @@ namespace PluginLit.Core
             Instance.AddAction(action);
         }
 
-        private Queue<Action> _actions = new Queue<Action>();
+        public static void Once(Action action)
+        {
+            if (action == null)
+                return;
+            
+            Instance.AddAction(action, true);
+        }
+
+        private readonly List<Action> _actions = new List<Action>();
         private bool _isDispose = false;
 
-        private void AddAction(Action action)
+        private void AddAction(Action action, bool once = false)
         {
             if (_isDispose) return;
             
@@ -52,7 +60,10 @@ namespace PluginLit.Core
             lock (_actions)
             {
 #endif
-                _actions.Enqueue(action);
+                if (once)
+                    _actions.Remove(action);
+                    
+                _actions.Add(action);
 #if !UNITY_WEBGL
             }
 #endif
@@ -60,25 +71,22 @@ namespace PluginLit.Core
 
         private void Update()
         {
-            Action next;
-            
-            while (true)
-            {
+            Action[] actions;
 #if !UNITY_WEBGL
                 lock (_actions)
                 {
 #endif
-                    if (_actions.Count <= 0)
-                        return;
-
-                    next = _actions.Dequeue();
+                    actions = _actions.ToArray();
+                    _actions.Clear();
 #if !UNITY_WEBGL
                 }
 #endif
-                
+
+            foreach (var action in actions)
+            {
                 try
                 {
-                    next.Invoke();
+                    action.Invoke();
                 }
                 catch (Exception e)
                 {
