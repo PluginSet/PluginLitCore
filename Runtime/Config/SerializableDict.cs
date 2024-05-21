@@ -15,8 +15,11 @@ namespace PluginLit.Core
         [SerializeField]
         public V Value;
 
+        private int _keyHash;
+
         public SerializableKeyValuePair(K key, V value)
         {
+            _keyHash = key.GetHashCode();
             Key = key;
             Value = value;
         }
@@ -26,9 +29,20 @@ namespace PluginLit.Core
         {
         }
 
+        public bool KeyEquals(in K other)
+        {
+            if (default(K) == null && other == null)
+            {
+                return Key == null;
+            }
+                
+            var num2 = other.GetHashCode() & int.MaxValue;
+            return _keyHash == num2 && EqualityComparer<K>.Default.Equals(Key, other);
+        }
+
         public bool Equals(SerializableKeyValuePair<K, V> other)
         {
-            return Key.Equals(other.Key) && Value.Equals(other.Value);
+            return KeyEquals(other.Key) && Value.Equals(other.Value);
         }
 
         public override string ToString()
@@ -73,20 +87,16 @@ namespace PluginLit.Core
             while (iter.MoveNext())
             {
                 var kv = iter.Current;
-                Pairs[index++] = new SerializableKeyValuePair<K, V>()
-                {
-                    Key = kv.Key,
-                    Value = kv.Value,
-                };
+                Pairs[index++] = new SerializableKeyValuePair<K, V>(kv.Key, kv.Value);
             }
             iter.Dispose();
         }
-
-        public bool TryGetValue(K key, out V value)
+        
+        public bool TryGetValue(in K key, out V value)
         {
             foreach (var p in SafePairs)
             {
-                if (p.Key.Equals(key))
+                if (p.KeyEquals(key))
                 {
                     value = p.Value;
                     return true;
