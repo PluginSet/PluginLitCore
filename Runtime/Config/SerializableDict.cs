@@ -15,11 +15,22 @@ namespace PluginLit.Core
         [SerializeField]
         public V Value;
 
-        private int _keyHash;
+        private int? _keyHash;
+
+        private int KeyHash
+        {
+            get
+            {
+                if (!_keyHash.HasValue)
+                    _keyHash = Key.GetHashCode() & int.MaxValue;
+
+                return _keyHash.Value;
+            }
+        }
 
         public SerializableKeyValuePair(K key, V value)
         {
-            _keyHash = key.GetHashCode();
+            _keyHash = key.GetHashCode() & int.MaxValue;
             Key = key;
             Value = value;
         }
@@ -37,7 +48,7 @@ namespace PluginLit.Core
             }
                 
             var num2 = other.GetHashCode() & int.MaxValue;
-            return _keyHash == num2 && EqualityComparer<K>.Default.Equals(Key, other);
+            return KeyHash == num2 && EqualityComparer<K>.Default.Equals(Key, other);
         }
 
         public bool Equals(SerializableKeyValuePair<K, V> other)
