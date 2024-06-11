@@ -76,6 +76,8 @@ namespace PluginLit.Core.Editor
         {
             ProjectPath = androidProjectPath;
             LibraryPath = Path.Combine(androidProjectPath, "unityLibrary");
+            if (!Directory.Exists(LibraryPath) && Directory.Exists(Path.Combine(androidProjectPath, "tuanjieLibrary")))
+                LibraryPath = Path.Combine(androidProjectPath, "tuanjieLibrary");
             LauncherPath = Path.Combine(androidProjectPath, "launcher");
             
             LauncherManifest = new XmlDocument();

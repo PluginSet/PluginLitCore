@@ -16,6 +16,7 @@ import shutil
 import git
 import plistlib
 import datetime
+import re
 
 from invoke import task
 from invoke.exceptions import Exit
@@ -71,17 +72,35 @@ def is_win_platform():
 WORK_PATH = os.getcwd()
 PROTJECT_PATH = WORK_PATH
 UNITY_HUB = os.environ.get("UNITY_HUB", None)
+TUANJIE_HUB = os.environ.get("TUANJIE_HUB", None)
 UNITY_PATH = os.environ.get("UNITY_PATH", None)
 log.info('PROTJECT_PATH="%s"' % (PROTJECT_PATH))
 log.info('UNITY_HUB="%s"' % (UNITY_HUB))
+log.info('TUANJIE_HUB="%s"' % (TUANJIE_HUB))
 log.info('UNITY_PATH="%s"' % (UNITY_PATH))
-if UNITY_HUB:
-    unity_version = get_unity_dict(os.path.join(PROTJECT_PATH, "ProjectSettings", "ProjectVersion.txt"))
-    log.info('unity_version="%s"' % (unity_version))
-    path = os.path.join(UNITY_HUB, unity_version.get("m_EditorVersion", "unknow"))
+
+unity_version = get_unity_dict(os.path.join(PROTJECT_PATH, "ProjectSettings", "ProjectVersion.txt"))
+log.info('unity_version="%s"' % (unity_version))
+version_string = unity_version.get("m_EditorVersion", "unknow")
+if re.search(r"t\d+$", version_string) and TUANJIE_HUB:
+    path = os.path.join(TUANJIE_HUB, version_string)
+    if os.path.exists(path):
+        if is_win_platform():
+            UNITY_PATH = os.path.join(path, "Tuanjie.exe")
+            if not os.path.exists(UNITY_PATH):
+                UNITY_PATH = os.path.join(path, "Editor", "Tuanjie.exe")
+        else:
+            UNITY_PATH = os.path.join(path, "Tuanjie.app", "Contents", "MacOS", "Tuanjie")
+        log.info("Set UNITY_PATH to hub version " + UNITY_PATH)
+    else:
+        log.info("Cannot find file with %s" % (path))
+elif UNITY_HUB:
+    path = os.path.join(UNITY_HUB, version_string)
     if os.path.exists(path):
         if is_win_platform():
             UNITY_PATH = os.path.join(path, "Unity.exe")
+            if not os.path.exists(UNITY_PATH):
+                UNITY_PATH = os.path.join(path, "Editor", "Unity.exe")
         else:
             UNITY_PATH = os.path.join(path, "Unity.app", "Contents", "MacOS", "Unity")
         log.info("Set UNITY_PATH to hub version " + UNITY_PATH)
